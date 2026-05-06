@@ -4,6 +4,7 @@ import './App.css'
 function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [tasks, setTasks] = useState([]);
 
   const handleLogin = async () => {
     try {
@@ -39,7 +40,7 @@ function App() {
       });
 
       const data = await response.json();
-      console.log("TASKS:", data);
+      setTasks(data.content);
     } catch (error) {
       console.error("Fetch tasks failed", error);
     }
@@ -71,6 +72,13 @@ function App() {
 
       <button onClick={handleLogin}>Login</button>
       <button onClick={fetchTasks}>Get Tasks</button>
+      <ul>
+        {tasks.map((task) => (
+          <li key={task.id}>
+            {task.description} - {task.status}
+          </li>
+        ))}
+      </ul>
     </div>
   
   );
