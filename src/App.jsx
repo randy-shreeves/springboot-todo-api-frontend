@@ -101,6 +101,24 @@ function App() {
     }
   };
 
+  const deleteTask = async (taskId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await fetch (`https://springboot-todo-api-z09g.onrender.com/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+    console.log("TASK DELETED SUCCESSFULLY");
+    fetchTasks();
+    } catch (error) {
+      console.error("Delete task failed", error);
+    }
+  };
+
   return (
     <div>
       <h1>Todo App</h1>
@@ -144,6 +162,7 @@ function App() {
           <li key={task.id}>
             {task.description} - {task.status}
             <button onClick={() => updateTaskStatus(task)}>Toggle Status</button>
+            <button onClick={() => deleteTask(task.id)}>Delete Task</button>
           </li>
         ))}
       </ul>
