@@ -5,6 +5,7 @@ function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [tasks, setTasks] = useState([]);
+  const [description, setDescription] = useState("");
 
   const handleLogin = async () => {
     try {
@@ -46,6 +47,30 @@ function App() {
     }
   };
 
+  const createTask = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch("https://springboot-todo-api-z09g.onrender.com/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          description: description,
+          status: "PENDING"
+        })
+      });
+
+      const data = await response.json();
+      fetchTasks();
+      setDescription("");
+    } catch (error) {
+      console.error("Create task failed", error);
+    }
+  };
+
   return (
     <div>
       <h1>Todo App</h1>
@@ -72,6 +97,18 @@ function App() {
 
       <button onClick={handleLogin}>Login</button>
       <button onClick={fetchTasks}>Get Tasks</button>
+
+      <br />
+
+      <h2>Create Task</h2>
+      <input
+        type="text"
+        placeholder="Task description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <button onClick={createTask}>Add Task</button>
+
       <ul>
         {tasks.map((task) => (
           <li key={task.id}>
