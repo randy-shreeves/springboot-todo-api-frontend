@@ -21,7 +21,7 @@ function App() {
       });
 
       const data = await response.json();
-      console.log("TOKEN:", data.token);
+      console.log("TOKEN RETRIEVED FOR LOGIN:", data.token);
       localStorage.setItem("token", data.token);
 
     } catch (error) {
@@ -42,6 +42,7 @@ function App() {
 
       const data = await response.json();
       setTasks(data.content);
+      console.log("FETCHED DATA:", data);
     } catch (error) {
       console.error("Fetch tasks failed", error);
     }
@@ -66,8 +67,37 @@ function App() {
       const data = await response.json();
       fetchTasks();
       setDescription("");
+      console.log("CREATED TASK:", data);
     } catch (error) {
       console.error("Create task failed", error);
+    }
+  };
+
+  const updateTaskStatus = async (task) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const updatedTask = {
+        ...task,
+        status:
+          task.status == "PENDING" ? "DONE" : "PENDING"
+      };
+
+      const response = await fetch(`https://springboot-todo-api-z09g.onrender.com/tasks/${task.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedTask)
+      }
+    );
+
+    const data = await response.json();
+    console.log("UPDATED TASK:", data);
+    fetchTasks();
+    } catch (error) {
+      console.error("Update task failed", error);
     }
   };
 
@@ -113,6 +143,7 @@ function App() {
         {tasks.map((task) => (
           <li key={task.id}>
             {task.description} - {task.status}
+            <button onClick={() => updateTaskStatus(task)}>Toggle Status</button>
           </li>
         ))}
       </ul>
