@@ -1,173 +1,38 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/DashboardPage";
+import RegisterPage from "./pages/RegisterPage";
 import './App.css'
 
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/login" />
+  }
+  return children;
+}
+
 function App() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [tasks, setTasks] = useState([]);
-  const [description, setDescription] = useState("");
-
-  const handleLogin = async () => {
-    try {
-      const response = await fetch("https://springboot-todo-api-z09g.onrender.com/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password
-        })
-      });
-
-      const data = await response.json();
-      console.log("TOKEN RETRIEVED FOR LOGIN:", data.token);
-      localStorage.setItem("token", data.token);
-
-    } catch (error) {
-      console.error("Login failed", error);
-    }
-  };
-
-  const fetchTasks = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch("https://springboot-todo-api-z09g.onrender.com/tasks", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-      setTasks(data.content);
-      console.log("FETCHED DATA:", data);
-    } catch (error) {
-      console.error("Fetch tasks failed", error);
-    }
-  };
-
-  const createTask = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch("https://springboot-todo-api-z09g.onrender.com/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          description: description,
-          status: "PENDING"
-        })
-      });
-
-      const data = await response.json();
-      fetchTasks();
-      setDescription("");
-      console.log("CREATED TASK:", data);
-    } catch (error) {
-      console.error("Create task failed", error);
-    }
-  };
-
-  const updateTaskStatus = async (task) => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const updatedTask = {
-        ...task,
-        status:
-          task.status == "PENDING" ? "DONE" : "PENDING"
-      };
-
-      const response = await fetch(`https://springboot-todo-api-z09g.onrender.com/tasks/${task.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(updatedTask)
-      }
-    );
-
-    const data = await response.json();
-    console.log("UPDATED TASK:", data);
-    fetchTasks();
-    } catch (error) {
-      console.error("Update task failed", error);
-    }
-  };
-
-  const deleteTask = async (taskId) => {
-    try {
-      const token = localStorage.getItem("token");
-
-      await fetch (`https://springboot-todo-api-z09g.onrender.com/tasks/${taskId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      }
-    );
-    console.log("TASK DELETED SUCCESSFULLY");
-    fetchTasks();
-    } catch (error) {
-      console.error("Delete task failed", error);
-    }
-  };
-
   return (
-    <div>
-      <h1>Todo App</h1>
+    <BrowserRouter>
 
-      <h2>Login</h2>
+      <Routes>
 
-      <input
-      type="text"
-      placeholder="Username"
-      value={username}
-      onChange={(e) => setUsername(e.target.value)}
-      />
+        <Route path="/login" element={<LoginPage />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/register" element={<RegisterPage />} />
 
-      <br />
+      </Routes>
 
-      <input
-      type="password"
-      placeholder="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <br />
-
-      <button onClick={handleLogin}>Login</button>
-      <button onClick={fetchTasks}>Get Tasks</button>
-
-      <br />
-
-      <h2>Create Task</h2>
-      <input
-        type="text"
-        placeholder="Task description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <button onClick={createTask}>Add Task</button>
-
-      <ul>
-        {tasks.map((task) => (
-          <li key={task.id}>
-            {task.description} - {task.status}
-            <button onClick={() => updateTaskStatus(task)}>Toggle Status</button>
-            <button onClick={() => deleteTask(task.id)}>Delete Task</button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  
+    </BrowserRouter>
   );
 }
 
