@@ -6,10 +6,14 @@ function LoginPage() {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async () => {
+    setLoading(true);
     try {
+      setErrorMessage("");
       const response = await fetch("https://springboot-todo-api-z09g.onrender.com/auth/login", {
         method: "POST",
         headers: {
@@ -21,6 +25,15 @@ function LoginPage() {
         })
       });
 
+      if (!response.ok) {
+        if (response.status === 401) {
+          setErrorMessage("Invalid username or password");
+        } else {
+          setErrorMessage("Login failed");
+        }
+        return;
+      }
+
       const data = await response.json();
       console.log("TOKEN RETRIEVED FOR LOGIN:", data.token);
       localStorage.setItem("token", data.token);
@@ -28,6 +41,9 @@ function LoginPage() {
 
     } catch (error) {
       console.error("Login failed", error);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -53,7 +69,8 @@ function LoginPage() {
 
       <br />
 
-      <button onClick={handleLogin}>Login</button>
+      {errorMessage && <p>{errorMessage}</p>}
+      <button onClick={handleLogin} disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
       <p>
         Don't have an account?
       </p>

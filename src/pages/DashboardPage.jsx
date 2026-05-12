@@ -10,14 +10,18 @@ function DashboardPage() {
     const fetchTasks = async () => {
         try {
         const token = localStorage.getItem("token");
-
         const response = await fetch("https://springboot-todo-api-z09g.onrender.com/tasks", {
             method: "GET",
             headers: {
             "Authorization": `Bearer ${token}`
             }
         });
-
+ 
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
+          return;
+        }
         const data = await response.json();
         setTasks(data.content);
         console.log("FETCHED DATA:", data);
