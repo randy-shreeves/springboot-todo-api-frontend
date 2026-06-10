@@ -41,11 +41,6 @@ The frontend stores the JWT in the browser's `localStorage` and includes it in a
 
 GitHub Actions is used to run CI checks
 
-## Deployment
-
-Deployed on Vercel.
-Live link: https://springboot-todo-api-frontend.vercel.app/
-
 ## Backend
 
 This application connects to a separate backend API that handles authentication, JWT generation/validation, and task management logic. Repo:
